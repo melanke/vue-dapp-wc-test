@@ -9,6 +9,8 @@
     <button @click="multiInvoke">Multi Invoke</button>
     <button @click="multiTestInvoke">Multi Test Invoke</button>
     <button @click="multiInvokeFailing">Multi Invoke Failing</button>
+    <button @click="signAndVerify">Sign and Verify Message</button>
+    <button @click="verifyFailling">Verify Failling</button>
   </div>
 </template>
 
@@ -52,7 +54,14 @@ export default class HelloWorld extends Vue {
   async connect (): Promise<void> {
     await this.wcSdk.connect({
       chains: [this.testnetKey, this.mainnetKey], // blockchain and network identifier
-      methods: ['invokefunction', 'testInvoke', 'multiInvoke', 'multiTestInvoke'], // which RPC methods do you plan to call
+      methods: [
+        'invokefunction',
+        'testInvoke',
+        'multiInvoke',
+        'multiTestInvoke',
+        'signMessage',
+        'verifyMessage'
+      ], // which RPC methods do you plan to call
       appMetadata: {
         name: 'MyApplicationName', // your application name to be displayed on the wallet
         description: 'My Application description', // description to be shown on the wallet
@@ -63,6 +72,10 @@ export default class HelloWorld extends Vue {
     QRCodeModal.close()
 
     alert(this.isConnected ? 'Connected successfully' : 'Connection refused')
+  }
+
+  async disconnect (): Promise<void> {
+    await this.wcSdk.disconnect()
   }
 
   async transferGas (): Promise<void> {
@@ -88,7 +101,7 @@ export default class HelloWorld extends Vue {
       scriptHash: '0x010101c0775af568185025b0ce43cfaa9b990a2a',
       operation: 'getStream',
       args: [{ type: 'Integer', value: 17 }],
-      signer: { scopes: WitnessScope.None }
+      signer: { scope: WitnessScope.None }
     })
 
     console.log(resp)
@@ -131,11 +144,13 @@ export default class HelloWorld extends Vue {
     const req2: ContractInvocation = {
       scriptHash: this.scripthash,
       operation: 'transfer',
-      args: [from, recipient, val, args],
-      signer: { scopes: WitnessScope.Global, allowedContracts: ['0x010101c0775af568185025b0ce43cfaa9b990a2a'] }
+      args: [from, recipient, val, args]
     }
 
-    const resp = await this.wcSdk.multiInvoke([req1, req2])
+    const resp = await this.wcSdk.multiInvoke({
+      signer: [{ scope: WitnessScope.Global, allowedContracts: ['0x010101c0775af568185025b0ce43cfaa9b990a2a'] }],
+      invocations: [req1, req2]
+    })
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
@@ -169,7 +184,10 @@ export default class HelloWorld extends Vue {
       args: [from, recipient, val, args]
     }
 
-    const resp = await this.wcSdk.multiTestInvoke([req1, req2])
+    const resp = await this.wcSdk.multiTestInvoke({
+      signer: [{ scope: WitnessScope.CalledByEntry }],
+      invocations: [req1, req2]
+    })
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
@@ -202,14 +220,37 @@ export default class HelloWorld extends Vue {
       abortOnFail: true
     }
 
-    const resp = await this.wcSdk.multiInvoke([req1, req2])
+    const resp = await this.wcSdk.multiInvoke({
+      signer: [{ scope: WitnessScope.CalledByEntry }],
+      invocations: [req1, req2]
+    })
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
   }
 
-  async disconnect (): Promise<void> {
-    await this.wcSdk.disconnect()
+  async signAndVerify (): Promise<void> {
+    const resp = await this.wcSdk.signMessage('Caralho, muleq, o baguiu eh issumermo taix ligado na missão?')
+
+    console.log(resp)
+    window.alert(JSON.stringify(resp, null, 2))
+
+    const resp2 = await this.wcSdk.verifyMessage(resp.result)
+
+    console.log(resp2)
+    window.alert(JSON.stringify(resp2, null, 2))
+  }
+
+  async verifyFailling (): Promise<void> {
+    const resp2 = await this.wcSdk.verifyMessage({
+      data: '4fe1b478cf76564b2133bdff9ba97d8a360ce36d0511918931cda207c2ce589dfc07ec5d8b93ce7c3b70fc88b676cc9e08f9811bf0d5b5710a20f10c58191bfb',
+      messageHex: '010001f05c3733336365623464346538666664633833656363366533356334343938393939436172616c686f2c206d756c65712c206f2062616775697520656820697373756d65726d6f2074616978206c696761646f206e61206d697373e36f3f0000',
+      publicKey: '031757edb62014dea820a0b33a156f6a59fc12bd966202f0e49357c81f26f5de34',
+      salt: '733ceb4d4e8ffdc83ecc6e35c4498999'
+    })
+
+    console.log(resp2)
+    window.alert(JSON.stringify(resp2, null, 2))
   }
 }
 </script>
