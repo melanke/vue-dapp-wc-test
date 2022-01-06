@@ -11,12 +11,13 @@
     <button @click="multiInvokeFailing">Multi Invoke Failing</button>
     <button @click="signAndVerify">Sign and Verify Message</button>
     <button @click="verifyFailling">Verify Failling</button>
+    <button @click="ledgerTests">Ledger Tests</button>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue } from 'vue-class-component'
-import { ContractInvocation, WcSdk, WitnessScope } from '@/components/WcSdk'
+import { Argument, ContractInvocation, WcSdk, WitnessScope } from '@cityofzion/wallet-connect-sdk-core'
 import { SessionTypes } from '@walletconnect/types/dist/cjs'
 import QRCodeModal from '@walletconnect/qrcode-modal'
 
@@ -55,10 +56,8 @@ export default class HelloWorld extends Vue {
     await this.wcSdk.connect({
       chains: [this.testnetKey, this.mainnetKey], // blockchain and network identifier
       methods: [
-        'invokefunction',
+        'invokeFunction',
         'testInvoke',
-        'multiInvoke',
-        'multiTestInvoke',
         'signMessage',
         'verifyMessage'
       ], // which RPC methods do you plan to call
@@ -78,19 +77,70 @@ export default class HelloWorld extends Vue {
     await this.wcSdk.disconnect()
   }
 
-  async transferGas (): Promise<void> {
-    const senderAddress = this.wcSdk.getAccountAddress()
+  async ledgerTests (): Promise<void> {
+    const resp = await this.wcSdk.invokeFunction({
+      scriptHash: '0x13a83e059c2eedd5157b766d3357bc826810905e',
+      operation: 'swapTokenInForTokenOut',
+      args: [
+        {
+          type: 'Address',
+          value: 'NiafyfWXhCH7XjUxybkaVePBvKBdvXur7J'
+        },
+        {
+          type: 'Integer',
+          value: '267240744'
+        },
+        {
+          type: 'Integer',
+          value: '99500000'
+        },
+        {
+          type: 'Array',
+          value: [
+            {
+              type: 'Hash160',
+              value: '0xd2a4cff31913016155e38e474a2c06d08be276cf'
+            },
+            {
+              type: 'Hash160',
+              value: '0x48c40d4666f93408be1bef038b6722404d9a4c2a'
+            }
+          ]
+        },
+        {
+          type: 'Integer',
+          value: '1641239607592'
+        }
+      ]
+    }, {
+      scopes: 16,
+      allowedContracts: [
+        '0x13a83e059c2eedd5157b766d3357bc826810905e',
+        '0x06f12a6aa2b5689ce97f16979b179fb3e31d63d7',
+        '0x701f7fe4c8d325487b64d718419a2a5a4a5e38eb',
+        '0xd2a4cff31913016155e38e474a2c06d08be276cf',
+        '0x9f882cb625c7312f899bff70098f4929fc5b9245',
+        '0x48c40d4666f93408be1bef038b6722404d9a4c2a'
+      ]
+    })
 
-    const from = { type: 'Address', value: senderAddress }
-    const recipient = { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' }
-    const value = { type: 'Integer', value: 100000000 }
-    const args = { type: 'Array', value: [] }
+    console.log(resp)
+    window.alert(JSON.stringify(resp, null, 2))
+  }
+
+  async transferGas (): Promise<void> {
+    const senderAddress = this.wcSdk.getAccountAddress() ?? ''
+
+    const from: Argument = { type: 'Address', value: senderAddress }
+    const recipient: Argument = { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' }
+    const value: Argument = { type: 'Integer', value: 100000000 }
+    const args: Argument = { type: 'Array', value: [] }
 
     const resp = await this.wcSdk.invokeFunction({
       scriptHash: this.scripthash,
       operation: 'transfer',
       args: [from, recipient, value, args]
-    })
+    }, { scopes: WitnessScope.CalledByEntry })
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
@@ -100,23 +150,22 @@ export default class HelloWorld extends Vue {
     const resp = await this.wcSdk.testInvoke({
       scriptHash: '0x010101c0775af568185025b0ce43cfaa9b990a2a',
       operation: 'getStream',
-      args: [{ type: 'Integer', value: 17 }],
-      signer: { scope: WitnessScope.None }
-    })
+      args: [{ type: 'Integer', value: 17 }]
+    }, { scopes: WitnessScope.None })
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
   }
 
   async withdrawStream (): Promise<void> {
-    const streamId = { type: 'Integer', value: 17 }
-    const value = { type: 'Integer', value: 1 }
+    const streamId: Argument = { type: 'Integer', value: 17 }
+    const value: Argument = { type: 'Integer', value: 1 }
 
     const resp = await this.wcSdk.invokeFunction({
       scriptHash: '0x010101c0775af568185025b0ce43cfaa9b990a2a',
       operation: 'withdraw',
       args: [streamId, value]
-    })
+    }, { scopes: WitnessScope.CalledByEntry })
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
@@ -128,7 +177,7 @@ export default class HelloWorld extends Vue {
       return
     }
 
-    const senderAddress = this.wcSdk.getAccountAddress()
+    const senderAddress = this.wcSdk.getAccountAddress() ?? ''
 
     const req1: ContractInvocation = {
       scriptHash: '0x010101c0775af568185025b0ce43cfaa9b990a2a',
@@ -136,10 +185,10 @@ export default class HelloWorld extends Vue {
       args: [{ type: 'Integer', value: 17 }]
     }
 
-    const from = { type: 'Address', value: senderAddress }
-    const recipient = { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' }
-    const val = { type: 'Integer', value: 100000000 }
-    const args = { type: 'Array', value: [] }
+    const from: Argument = { type: 'Address', value: senderAddress }
+    const recipient: Argument = { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' }
+    const val: Argument = { type: 'Integer', value: 100000000 }
+    const args: Argument = { type: 'Array', value: [] }
 
     const req2: ContractInvocation = {
       scriptHash: this.scripthash,
@@ -147,10 +196,10 @@ export default class HelloWorld extends Vue {
       args: [from, recipient, val, args]
     }
 
-    const resp = await this.wcSdk.multiInvoke({
-      signer: [{ scope: WitnessScope.Global, allowedContracts: ['0x010101c0775af568185025b0ce43cfaa9b990a2a'] }],
-      invocations: [req1, req2]
-    })
+    const resp = await this.wcSdk.invokeFunction(
+      [req1, req2],
+      { scopes: WitnessScope.Global, allowedContracts: ['0x010101c0775af568185025b0ce43cfaa9b990a2a'] }
+    )
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
@@ -162,32 +211,32 @@ export default class HelloWorld extends Vue {
       return
     }
 
-    const senderAddress = this.wcSdk.getAccountAddress()
+    const senderAddress = this.wcSdk.getAccountAddress() ?? ''
 
-    const streamId = { type: 'Integer', value: 2 }
-    const value = { type: 'Integer', value: 1 }
+    const streamId: Argument = { type: 'Integer', value: 2 }
+    const value: Argument = { type: 'Integer', value: 1 }
 
-    const req1 = {
+    const req1: ContractInvocation = {
       scriptHash: '0x010101c0775af568185025b0ce43cfaa9b990a2a',
       operation: 'withdraw',
       args: [streamId, value]
     }
 
-    const from = { type: 'Address', value: senderAddress }
-    const recipient = { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' }
-    const val = { type: 'Integer', value: 100000000 }
-    const args = { type: 'Array', value: [] }
+    const from: Argument = { type: 'Address', value: senderAddress }
+    const recipient: Argument = { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' }
+    const val: Argument = { type: 'Integer', value: 100000000 }
+    const args: Argument = { type: 'Array', value: [] }
 
-    const req2 = {
+    const req2: ContractInvocation = {
       scriptHash: this.scripthash,
       operation: 'transfer',
       args: [from, recipient, val, args]
     }
 
-    const resp = await this.wcSdk.multiTestInvoke({
-      signer: [{ scope: WitnessScope.CalledByEntry }],
-      invocations: [req1, req2]
-    })
+    const resp = await this.wcSdk.testInvoke(
+      [req1, req2],
+      { scopes: WitnessScope.CalledByEntry }
+    )
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
@@ -199,31 +248,31 @@ export default class HelloWorld extends Vue {
       return
     }
 
-    const senderAddress = this.wcSdk.getAccountAddress()
+    const senderAddress = this.wcSdk.getAccountAddress() ?? ''
 
-    const req1 = {
+    const req1: ContractInvocation = {
       scriptHash: '0x010101c0775af568185025b0ce43cfaa9b990a2a',
       operation: 'verify',
       args: [],
       abortOnFail: true
     }
 
-    const from = { type: 'Address', value: senderAddress }
-    const recipient = { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' }
-    const val = { type: 'Integer', value: 100000000 }
-    const args = { type: 'Array', value: [] }
+    const from: Argument = { type: 'Address', value: senderAddress }
+    const recipient: Argument = { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' }
+    const val: Argument = { type: 'Integer', value: 100000000 }
+    const args: Argument = { type: 'Array', value: [] }
 
-    const req2 = {
+    const req2: ContractInvocation = {
       scriptHash: this.scripthash,
       operation: 'transfer',
       args: [from, recipient, val, args],
       abortOnFail: true
     }
 
-    const resp = await this.wcSdk.multiInvoke({
-      signer: [{ scope: WitnessScope.CalledByEntry }],
-      invocations: [req1, req2]
-    })
+    const resp = await this.wcSdk.invokeFunction(
+      [req1, req2],
+      { scopes: WitnessScope.CalledByEntry }
+    )
 
     console.log(resp)
     window.alert(JSON.stringify(resp, null, 2))
