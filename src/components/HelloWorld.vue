@@ -11,6 +11,7 @@
     <button @click="multiInvokeFailing">Multi Invoke Failing</button>
     <button @click="signAndVerify">Sign and Verify Message</button>
     <button @click="verifyFailling">Verify Failling</button>
+    <button @click="verify">Verify Success</button>
     <button @click="ledgerTests">Ledger Tests</button>
   </div>
 </template>
@@ -18,8 +19,6 @@
 <script lang="ts">
 import { Vue } from 'vue-class-component'
 import { Argument, ContractInvocation, WcSdk, WitnessScope } from '@cityofzion/wallet-connect-sdk-core'
-import { SessionTypes } from '@walletconnect/types/dist/cjs'
-import QRCodeModal from '@walletconnect/qrcode-modal'
 
 export default class HelloWorld extends Vue {
   wcSdk = new WcSdk()
@@ -27,8 +26,8 @@ export default class HelloWorld extends Vue {
   mainnetKey = 'neo3:mainnet'
   scripthash = '0xd2a4cff31913016155e38e474a2c06d08be276cf'
 
-  get isConnected (): SessionTypes.Settled | undefined {
-    return this.wcSdk.session
+  get isConnected (): boolean {
+    return !!this.wcSdk.session
   }
 
   async mounted (): Promise<void> {
@@ -39,8 +38,7 @@ export default class HelloWorld extends Vue {
 
     this.wcSdk.subscribeToEvents({
       onProposal: (uri: string) => {
-        QRCodeModal.open(uri, () => { /* nothing */ })
-        // window.open(`https://neon-dev.coz.io/?uri=${uri}`, '_blank')?.focus()
+        window.open(`https://neon.coz.io/connect?uri=${uri}`, '_blank')?.focus()
       },
       onDeleted: () => {
         this.disconnect()
@@ -68,7 +66,6 @@ export default class HelloWorld extends Vue {
         icons: ['https://myapplicationdescription.app/myappicon.png'] // icon to be shown on the wallet
       }
     })
-    QRCodeModal.close()
 
     alert(this.isConnected ? 'Connected successfully' : 'Connection refused')
   }
@@ -296,6 +293,18 @@ export default class HelloWorld extends Vue {
       messageHex: '010001f05c3733336365623464346538666664633833656363366533356334343938393939436172616c686f2c206d756c65712c206f2062616775697520656820697373756d65726d6f2074616978206c696761646f206e61206d697373e36f3f0000',
       publicKey: '031757edb62014dea820a0b33a156f6a59fc12bd966202f0e49357c81f26f5de34',
       salt: '733ceb4d4e8ffdc83ecc6e35c4498999'
+    })
+
+    console.log(resp2)
+    window.alert(JSON.stringify(resp2, null, 2))
+  }
+
+  async verify (): Promise<void> {
+    const resp2 = await this.wcSdk.verifyMessage({
+      publicKey: '031757edb62014dea820a0b33a156f6a59fc12bd966202f0e49357c81f26f5de34',
+      data: 'aeb234ed1639e9fcc95a102633b1c70ca9f9b97e9592cc74bfc40cbc7fefdb19ae8c6b49ebd410dbcbeec6b5906e503d528e34cd5098cc7929dbcbbaf23c5d77',
+      salt: '052a55a8d56b73b342a8e41da3050b09',
+      messageHex: '010001f0a0303532613535613864353662373362333432613865343164613330353062303965794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a6c654841694f6a45324e444d304e7a63324e6a4d73496d6c68644349364d5459304d7a4d354d5449324d33302e7253315f73735230364c426778744831504862774c306d7a6557563950686d5448477a324849524f4a4f340000'
     })
 
     console.log(resp2)
