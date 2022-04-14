@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@cityofzion/neon-js": "^5.0.0-next.10",
-    "@cityofzion/wallet-connect-sdk-core": "^1.6.1",
+    "@walletconnect/client": "^2.0.0-beta.26",
+    "@walletconnect/types": "^2.0.0-beta.26",
     "core-js": "^3.6.5",
     "ipfs": "^0.55.4",
     "uint8arrays": "^2.1.5",
@@ -38,12 +39,5 @@
     "sass": "^1.26.5",
     "sass-loader": "^8.0.2",
     "typescript": "~4.1.5"
-  },
-  "resolutions": {
-    "@walletconnect/client": "2.0.0-beta.17",
-    "@walletconnect/jsonrpc-utils": "1.0.0",
-    "@walletconnect/qrcode-modal": "2.0.0-alpha.20",
-    "@walletconnect/types": "2.0.0-beta.17",
-    "@walletconnect/utils": "2.0.0-beta.17"
   }
 }

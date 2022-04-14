@@ -18,7 +18,7 @@
 
 <script lang="ts">
 import { Vue } from 'vue-class-component'
-import { Argument, ContractInvocation, WcSdk, WitnessScope } from '@cityofzion/wallet-connect-sdk-core'
+import { Argument, ContractInvocation, WcSdk, WitnessScope } from '@/WcSdk'
 
 export default class HelloWorld extends Vue {
   wcSdk = new WcSdk()
@@ -33,7 +33,13 @@ export default class HelloWorld extends Vue {
   async mounted (): Promise<void> {
     await this.wcSdk.initClient(
       'debug', // logger: use debug to show all log information on browser console
-      'wss://relay.walletconnect.org' // relayServer: which relay server do you want to use, alternatively you can use "wss://relay.walletconnect.org"
+      'wss://relay.walletconnect.org', // relayServer: which relay server do you want to use, alternatively you can use "wss://relay.walletconnect.org"
+      {
+        name: 'MyApplicationName', // your application name to be displayed on the wallet
+        description: 'My Application description', // description to be shown on the wallet
+        url: 'https://myapplicationdescription.app/', // url to be linked on the wallet
+        icons: ['https://myapplicationdescription.app/myappicon.png'] // icon to be shown on the wallet
+      }
     )
 
     this.wcSdk.subscribeToEvents({
@@ -58,13 +64,7 @@ export default class HelloWorld extends Vue {
         'testInvoke',
         'signMessage',
         'verifyMessage'
-      ], // which RPC methods do you plan to call
-      appMetadata: {
-        name: 'MyApplicationName', // your application name to be displayed on the wallet
-        description: 'My Application description', // description to be shown on the wallet
-        url: 'https://myapplicationdescription.app/', // url to be linked on the wallet
-        icons: ['https://myapplicationdescription.app/myappicon.png'] // icon to be shown on the wallet
-      }
+      ] // which RPC methods do you plan to call
     })
 
     alert(this.isConnected ? 'Connected successfully' : 'Connection refused')
