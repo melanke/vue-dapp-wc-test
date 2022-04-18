@@ -31,16 +31,17 @@ export default class HelloWorld extends Vue {
   }
 
   async mounted (): Promise<void> {
-    await this.wcSdk.initClient(
-      'debug', // logger: use debug to show all log information on browser console
-      'wss://relay.walletconnect.org', // relayServer: which relay server do you want to use, alternatively you can use "wss://relay.walletconnect.org"
-      {
+    await this.wcSdk.initClient({
+      logger: 'debug', // logger: use debug to show all log information on browser console
+      relayUrl: 'wss://relay.walletconnect.org', // relayServer: which relay server do you want to use, alternatively you can use "wss://relay.walletconnect.org"
+      projectId: 'a9ff54e3d56a52230ed8767db4d4a810',
+      metadata: {
         name: 'MyApplicationName', // your application name to be displayed on the wallet
         description: 'My Application description', // description to be shown on the wallet
         url: 'https://myapplicationdescription.app/', // url to be linked on the wallet
         icons: ['https://myapplicationdescription.app/myappicon.png'] // icon to be shown on the wallet
       }
-    )
+    })
 
     this.wcSdk.subscribeToEvents({
       onProposal: (uri: string) => {

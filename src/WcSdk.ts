@@ -1,5 +1,5 @@
 import Client, { CLIENT_EVENTS } from '@walletconnect/client/dist/cjs'
-import { AppMetadata, PairingTypes, SessionTypes } from '@walletconnect/types/dist/cjs'
+import { PairingTypes, SessionTypes, ClientOptions } from '@walletconnect/types/dist/cjs'
 
 /**
  * A simple interface that defines the callbacks that can be implemented
@@ -266,20 +266,23 @@ export class WcSdk {
 
   /**
    * Initializes the SDK, it's the first method to be called
-   * @param logger the logger level, describes how much information to show on the log, use `debug` for more information or `error` for less information
-   * @param relayServer the relayserver to connect to, it needs to be the same relay server of the wallet. It's recommended to use `wss://relay.walletconnect.org`
-   * @param metadata the dApp metadata to be shown on the wallet
+   * @param initOptions
    * ```
    * {
+   *   relayUrl: "wss://relay.walletconnect.org",
+   *   projectId: "abc123",
+   *   metadata: {
    *     name: "My dApp Name",
    *     description: "This is the dApp description",
    *     url: "https://mydappwebsite.com/",
    *     icons: ["https://mydappwebsite.com/icon.png"]
+   *   }
    * }
    * ```
+   * @return a wcClient
    */
-  async initClient (logger: string, relayServer: string, metadata: AppMetadata): Promise<void> {
-    this.wcClient = await WcSdk.initClient(logger, relayServer, metadata)
+  async initClient (initOptions: ClientOptions): Promise<void> {
+    this.wcClient = await WcSdk.initClient(initOptions)
   }
 
   /**
@@ -520,25 +523,23 @@ export class WcSdk {
 
   /**
    * Initializes the SDK, it's the first method to be called
-   * @param logger the logger level, describes how much information to show on the log, use `debug` for more information or `error` for less information
-   * @param relayUrl the relayProvider to connect to, it needs to be the same relay server of the wallet. It's recommended to use `wss://relay.walletconnect.org`
-   * @param metadata the dApp metadata to be shown on the wallet
+   * @param initOptions
    * ```
    * {
+   *   relayUrl: "wss://relay.walletconnect.org",
+   *   projectId: "abc123",
+   *   metadata: {
    *     name: "My dApp Name",
    *     description: "This is the dApp description",
    *     url: "https://mydappwebsite.com/",
    *     icons: ["https://mydappwebsite.com/icon.png"]
+   *   }
    * }
    * ```
    * @return a wcClient
    */
-  static async initClient (logger: string, relayUrl: string, metadata: AppMetadata): Promise<Client> {
-    return await Client.init({
-      logger,
-      relayUrl,
-      metadata
-    })
+  static async initClient (initOptions: ClientOptions): Promise<Client> {
+    return await Client.init(initOptions)
   }
 
   /**
@@ -682,10 +683,16 @@ export class WcSdk {
    * @param wcClient
    * @param session connected session
    * @param chainId the chosen blockchain id to make the request, must be one of the blockchains authorized by the wallet
-   * @param request the request information object containing the rpc method name and the parameters
+   * @param methodAndParams the request information object containing the rpc method name and the parameters
    * @return the call result promise
    */
-  static async sendRequest (wcClient: Client, session: SessionTypes.Created, chainId: string, request: MethodAndParams): Promise<RpcCallResult<any>> {
+  static async sendRequest (wcClient: Client, session: SessionTypes.Created, chainId: string, methodAndParams: MethodAndParams): Promise<RpcCallResult<any>> {
+    const request = {
+      id: 1,
+      jsonrpc: '2.0',
+      ...methodAndParams
+    }
+
     try {
       const result = await wcClient.request({
         topic: session.topic,
