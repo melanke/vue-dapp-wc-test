@@ -1,9 +1,9 @@
 <template>
   <div class="hello">
-    <span v-if="loading">Loading...</span>
+    <span v-if="!wcSdk">Loading...</span>
     <template v-else>
-      <button v-if="!wcSdk?.isConnected" @click="connect">Connect</button>
-      <button v-else @click="disconnect">Disconnect</button>
+      <button v-if="!wcSdk?.isConnected()" @click="wcSdk?.connect">Connect</button>
+      <button v-else @click="wcSdk.disconnect">Disconnect</button>
 
       <button @click="transferGas">Transfer Gas</button>
       <button @click="multiInvoke">Multi Invoke</button>
@@ -23,13 +23,12 @@ import WcSdk, { WitnessScope } from '@/WcSdk'
 
 export default class HelloWorld extends Vue {
   wcSdk: WcSdk | null = null
-  loading = true
   scripthash = '0xd2a4cff31913016155e38e474a2c06d08be276cf'
 
   async mounted (): Promise<void> {
     this.wcSdk = new WcSdk(await WalletConnectClient.init({
       projectId: 'a9ff54e3d56a52230ed8767db4d4a810',
-      relayUrl: 'wss://relay.walletconnect.com',
+      relayUrl: 'wss://relay.walletconnect.org',
       metadata: {
         name: 'MyApplicationName', // your application name to be displayed on the wallet
         description: 'My Application description', // description to be shown on the wallet
@@ -39,15 +38,6 @@ export default class HelloWorld extends Vue {
     }))
 
     await this.wcSdk.manageSession()
-    this.loading = false
-
-    console.log('session', this.wcSdk.session)
-  }
-
-  async connect (): Promise<void> {
-    await this.wcSdk?.connect()
-
-    alert(this.wcSdk?.isConnected ? 'Connected successfully' : 'Connection refused')
   }
 
   async transferGas (): Promise<void> {
@@ -56,7 +46,7 @@ export default class HelloWorld extends Vue {
         scriptHash: this.scripthash,
         operation: 'transfer',
         args: [
-          { type: 'Address', value: this.wcSdk?.accountAddress ?? '' },
+          { type: 'Address', value: this.wcSdk?.getAccountAddress() ?? '' },
           { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' },
           { type: 'Integer', value: 100000000 },
           { type: 'Array', value: [] }
@@ -80,7 +70,7 @@ export default class HelloWorld extends Vue {
           scriptHash: this.scripthash,
           operation: 'transfer',
           args: [
-            { type: 'Address', value: this.wcSdk?.accountAddress ?? '' },
+            { type: 'Address', value: this.wcSdk?.getAccountAddress() ?? '' },
             { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' },
             { type: 'Integer', value: 100000000 },
             { type: 'Array', value: [] }
@@ -110,7 +100,7 @@ export default class HelloWorld extends Vue {
           scriptHash: this.scripthash,
           operation: 'transfer',
           args: [
-            { type: 'Address', value: this.wcSdk?.accountAddress ?? '' },
+            { type: 'Address', value: this.wcSdk?.getAccountAddress() ?? '' },
             { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' },
             { type: 'Integer', value: 100000000 },
             { type: 'Array', value: [] }
@@ -137,7 +127,7 @@ export default class HelloWorld extends Vue {
           scriptHash: this.scripthash,
           operation: 'transfer',
           args: [
-            { type: 'Address', value: this.wcSdk?.accountAddress ?? '' },
+            { type: 'Address', value: this.wcSdk?.getAccountAddress() ?? '' },
             { type: 'Address', value: 'NbnjKGMBJzJ6j5PHeYhjJDaQ5Vy5UYu4Fv' },
             { type: 'Integer', value: 100000000 },
             { type: 'Array', value: [] }
