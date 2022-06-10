@@ -19,7 +19,7 @@
 <script lang="ts">
 import { Vue } from 'vue-class-component'
 import SignClient from '@walletconnect/sign-client'
-import WcSdk, { WitnessScope } from '@/WcSdk'
+import WcSdk, { WitnessScope } from '@cityofzion/wallet-connect-sdk-core'
 
 export default class HelloWorld extends Vue {
   wcSdk: WcSdk | null = null

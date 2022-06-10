@@ -988,6 +988,15 @@
     "@cityofzion/neon-api" "^5.0.0-next.16"
     "@cityofzion/neon-core" "^5.0.0-next.16"
 
+"@cityofzion/wallet-connect-sdk-core@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@cityofzion/wallet-connect-sdk-core/-/wallet-connect-sdk-core-2.0.0.tgz#6bbaa445503c65dac137d8b4b6611007dd05708e"
+  integrity sha512-D8iwcFBeRtGOJm5b5N1m36O9WIv2W+EON+4pFlg3SYHBCkdqGZUqVgAqZEtXSOu6sLGEx54TDyKrX4F8QW19kw==
+  dependencies:
+    "@cityofzion/neon-core" "^5.0.0"
+    "@walletconnect/sign-client" "^2.0.0-beta.100"
+    "@walletconnect/types" "^2.0.0-beta.100"
+
 "@grpc/grpc-js@^1.1.8":
   version "1.5.4"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.5.4.tgz#dd0237ad7df80a7a24766fe516d7e4a22cb4855e"
