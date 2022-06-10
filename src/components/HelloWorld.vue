@@ -18,7 +18,7 @@
 
 <script lang="ts">
 import { Vue } from 'vue-class-component'
-import WalletConnectClient from '@walletconnect/client'
+import SignClient from '@walletconnect/sign-client'
 import WcSdk, { WitnessScope } from '@/WcSdk'
 
 export default class HelloWorld extends Vue {
@@ -26,9 +26,9 @@ export default class HelloWorld extends Vue {
   scripthash = '0xd2a4cff31913016155e38e474a2c06d08be276cf'
 
   async mounted (): Promise<void> {
-    this.wcSdk = new WcSdk(await WalletConnectClient.init({
+    this.wcSdk = new WcSdk(await SignClient.init({
       projectId: 'a9ff54e3d56a52230ed8767db4d4a810',
-      relayUrl: 'wss://relay.walletconnect.org',
+      relayUrl: 'wss://relay.walletconnect.com',
       metadata: {
         name: 'MyApplicationName', // your application name to be displayed on the wallet
         description: 'My Application description', // description to be shown on the wallet
